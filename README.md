@@ -1,3 +1,5 @@
+Alert a user on Discord if a Twitch channel is still live 60 seconds after hosting another channel.
+
 ```
 nano config.json
 ```
