@@ -1,0 +1,17 @@
+{
+  "name": "kaede",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "author": "wizo06",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "logger": "github:wizo06/logger",
+    "twitch": "^4.5.5",
+    "twitch-auth": "^4.5.5",
+    "twitch-chat-client": "^4.5.5"
+  }
+}
