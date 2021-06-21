@@ -14,13 +14,13 @@
   const apiClient = new ApiClient({ authProvider });
 
   const twitchClient = ChatClient.anonymous({ channels: [CONFIG.twitch.channelNameToListen] })
-  await twitchClient.connect().catch(e => console.log(e))
+  await twitchClient.connect().catch(e => { console.log(e); process.exit(1); })
   logger.success(`[Twitch] Connected to chat`)
 
   discordClient.on('ready', async () => {
     logger.success(`[Discord] Logged in as ${discordClient.user.tag}`)
 
-    const userToBeNotified = await discordClient.users.fetch(CONFIG.discord.userIdToBeNotified).catch(e => console.log(e))
+    const userToBeNotified = await discordClient.users.fetch(CONFIG.discord.userIdToBeNotified).catch(e => { console.log(e); process.exit(1); })
 
     twitchClient.onHost(async (channel, target, viewers) => {
       logger.info(`Hosting...`)
@@ -38,7 +38,7 @@
             const embed = new Discord.MessageEmbed()
               .setColor('#ff0000')
               .setTitle('STREAM IS STILL LIVE!!!')
-              .setDescription('You hosted another channel 60 seconds ago, but your channel is still live.')
+              .setDescription('You hosted another channel more than 60 seconds ago, but your channel is still live.')
               .setTimestamp()
   
             await userToBeNotified.send(embed).catch(e => console.log(e))
