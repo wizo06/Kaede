@@ -1,0 +1,13 @@
+[twitch]
+# The client ID of your Twitch Application
+clientId = ""
+# The Client Secret of your Twitch Application
+clientSecret = ""
+# The Twitch channel that you want Kaede to check
+channelNameToListen = ""
+
+[discord]
+# Discord bot token
+token = ""
+# The user ID of the Discord user that will be notified
+userIdToBeNotified = ""

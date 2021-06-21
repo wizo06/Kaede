@@ -4,7 +4,8 @@
   const { ClientCredentialsAuthProvider } = require('twitch-auth')
   const Discord = require('discord.js')
   const logger = require('logger')
-  const CONFIG = require('./config.json')
+  const data = require('fs').readFileSync('./config.toml', { encoding: 'utf8' })
+  const CONFIG = require('@iarna/toml').parse(data)
 
   const discordClient = new Discord.Client()
 

@@ -8,6 +8,7 @@
   "author": "wizo06",
   "license": "ISC",
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "discord.js": "^12.5.3",
     "logger": "github:wizo06/logger",
     "twitch": "^4.5.5",
