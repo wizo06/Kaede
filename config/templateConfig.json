@@ -1,0 +1,8 @@
+{
+  "clientId": "YOUR_CLIENT_ID",
+  "clientSecret": "YOUR_CLIENT_SECRET",
+  "channelWebhook": {
+    "YOUR_CHANNEL_NAME": "YOUR_WEBHOOK_URL"
+  },
+  "masterWebhook": "YOUR_MASTER_WEBHOOK_URL"
+}
