@@ -46,12 +46,13 @@
         try {
           const stream = await user.getStream();
           if (stream) {
-            logger.warn(`${stream.userName} is still live with ${stream.viewers} viewer(s). Stream started at ${stream.startDate}`);
             const doc = await db.collection("channels").doc(user.id).get();
+            const msg = `<@${doc.data().discordID}> ${stream.userName} is still live with ${stream.viewers} viewer(s). Stream started at ${stream.startDate}`;
+            logger.warn(msg);
             await fetch(doc.data().webhook, {
               method: "POST",
               body: JSON.stringify({
-                content: `${stream.userName} is still live with ${stream.viewers} viewer(s). Stream started at ${stream.startDate}`,
+                content: msg,
               }),
               headers: { "Content-Type": "application/json" },
             });

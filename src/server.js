@@ -19,7 +19,7 @@ app.post("/", async (req, res) => {
   try {
     const user = await apiClient.users.getUserByName(req.body.cname);
     if (!user) return res.end(failure);
-    await db.collection("channels").doc(user.id).set({ name: user.name, webhook: req.body.webhook });
+    await db.collection("channels").doc(user.id).set({ name: user.name, webhook: req.body.webhook, discordID: req.body.discordID });
     res.end(success);
   } catch (e) {
     logger.error(e);

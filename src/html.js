@@ -24,6 +24,10 @@ exports.form = `
             <label for="webhook">Webhook</label>
             <input type="text" name="webhook"/>
           </div>
+          <div class="pure-control-group">
+            <label for="discordID">Discord ID</label>
+            <input type="text" name="discordID"/>
+          </div>
           <div class="pure-controls">
             <input type="submit" value="Submit" class="pure-button pure-button-primary">
           </div>
