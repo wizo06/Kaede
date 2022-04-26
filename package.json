@@ -10,7 +10,9 @@
     "@twurple/api": "^5.0.18",
     "@twurple/auth": "^5.0.18",
     "@twurple/chat": "^5.0.18",
-    "@wizo06/logger": "^1.3.0",
+    "@wizo06/logger": "^2.0.1",
+    "express": "^4.18.0",
+    "firebase-admin": "^10.1.0",
     "node-fetch": "^3.2.3"
   }
 }

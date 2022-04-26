@@ -1,67 +1,70 @@
 (async () => {
-  const config = require("../config/config.json");
-  const { ClientCredentialsAuthProvider } = require("@twurple/auth");
-  const { ChatClient } = require("@twurple/chat");
-  const { ApiClient } = require("@twurple/api");
-  const logger = require("@wizo06/logger");
-  const fetch = (...args) =>
-    import("node-fetch").then(({ default: fetch }) => fetch(...args));
+  const { Logger } = require("@wizo06/logger");
+  const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
+  const { db } = require("./firebase.js");
+  const { chatClient, apiClient } = require("./twitch.js");
 
-  // Auth
-  const authProvider = new ClientCredentialsAuthProvider(
-    config.clientId,
-    config.clientSecret
-  );
-  // Api
-  const apiClient = new ApiClient({ authProvider });
-  // Chat
-  const chatClient = new ChatClient({
-    channels: Object.keys(config.channelWebhook),
-  });
+  const logger = new Logger();
 
-  chatClient.onConnect(() => logger.success(`Connected to Twitch server`));
-  chatClient.onJoin((ch, user) => logger.success(`Joined ${ch} as ${user}`));
+  chatClient.onConnect(() => {
+    logger.success(`Connected to Twitch server`);
 
-  // Listen to hosting events
-  chatClient.onHost(async (ch, t, _) => {
-    logger.info(`${ch} is hosting ${t}`);
-    const user = await apiClient.users.getUserByName(ch.replace("#", ""));
-
-    // Check if stream is live after 60s
-    setTimeout(async () => {
-      const stream = await user.getStream();
-      if (stream) {
-        logger.warning(
-          `${stream.userName} is still live with ${stream.viewers} viewer(s). Stream started at ${stream.startDate}`
-        );
-        await fetch(config.channelWebhook[stream.userName], {
-          method: "POST",
-          body: JSON.stringify({
-            content: `${stream.userName} is still live with ${stream.viewers} viewer(s). Stream started at ${stream.startDate}`,
-          }),
-          headers: { "Content-Type": "application/json" },
-        }).catch(e => {
-          logger.error(`${stream.userName} ${e}`)
-          logger.error(`${stream.userName} => ${config.channelWebhook[stream.userName]}`)
+    db.collection("channels").onSnapshot(
+      (querySnapshot) => {
+        querySnapshot.docChanges().forEach(async (change) => {
+          try {
+            if (change.type === "added") {
+              await chatClient.join(change.doc.data().name);
+              return;
+            }
+            if (change.type === "modified") {
+              return;
+            }
+            if (change.type === "removed") {
+              chatClient.part(change.doc.data().name);
+              return;
+            }
+          } catch (e) {
+            logger.error(e);
+          }
         });
-
-        await fetch(config.masterWebhook, {
-          method: "POST",
-          body: JSON.stringify({
-            content: `${stream.userName} is still live with ${stream.viewers} viewer(s). Stream started at ${stream.startDate}`,
-          }),
-          headers: { "Content-Type": "application/json" },
-        }).catch(e => {
-          logger.error(`${stream.userName} ${e}`)
-          logger.error(`${stream.userName} => ${config.masterWebhook}`)
-        });
-        return;
-      }
-
-      logger.success(`${ch} is offline`);
-    }, 60000);
+      },
+      (err) => logger.error(err)
+    );
   });
-
-  // Connect to chat
+  chatClient.onJoin((ch, _) => logger.success(`Joined ${ch}`));
+  chatClient.onPart((ch, _) => logger.success(`Parted from ${ch}`));
   await chatClient.connect();
+
+  chatClient.onHost(async (ch, t, _) => {
+    try {
+      logger.info(`${ch} is hosting ${t}`);
+      const user = await apiClient.users.getUserByName(ch.replace("#", "")).catch((e) => logger.error(e));
+
+      // Check if stream is live after 60s
+      setTimeout(async () => {
+        try {
+          const stream = await user.getStream();
+          if (stream) {
+            logger.warn(`${stream.userName} is still live with ${stream.viewers} viewer(s). Stream started at ${stream.startDate}`);
+            const doc = await db.collection("channels").doc(user.id).get();
+            await fetch(doc.data().webhook, {
+              method: "POST",
+              body: JSON.stringify({
+                content: `${stream.userName} is still live with ${stream.viewers} viewer(s). Stream started at ${stream.startDate}`,
+              }),
+              headers: { "Content-Type": "application/json" },
+            });
+            return;
+          }
+
+          logger.info(`${ch} is offline`);
+        } catch (e) {
+          logger.error(e);
+        }
+      }, 60000);
+    } catch (e) {
+      logger.error(e);
+    }
+  });
 })();
